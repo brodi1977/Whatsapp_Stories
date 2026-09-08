@@ -13,5 +13,5 @@
 
 const CONFIG = {
   FOLDER_ID: "1vRQKT_Uph02jxDDy0LSwlBWu1ulyrKKq",
-  API_KEY: "PUT_YOUR_API_KEY_HERE",
+  API_KEY: "AIzaSyAIv9gccZMVbk4bkGqwHCLrDiZ7PrZqFTY",
 };
