@@ -81,20 +81,6 @@ function parseFileName(rawName) {
   };
 }
 
-function formatDate(iso) {
-  try {
-    return new Date(iso).toLocaleString("he-IL", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  } catch {
-    return "";
-  }
-}
-
 function mediaUrl(fileId) {
   return `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}?alt=media&key=${encodeURIComponent(CONFIG.API_KEY)}`;
 }
@@ -149,8 +135,6 @@ function stopPlayback() {
 function setTileUiPlaying(tile, isPlaying) {
   if (!tile) return;
   tile.classList.toggle("playing", isPlaying);
-  const btn = tile.querySelector(".play-btn");
-  if (btn) btn.textContent = isPlaying ? "⏸" : "▶";
   if (!isPlaying) {
     const bar = tile.querySelector(".progress-bar");
     if (bar) bar.style.width = "0%";
@@ -204,17 +188,6 @@ function renderClips(clips) {
     titleEl.className = "tile-title";
     titleEl.textContent = clip.title;
 
-    const metaEl = document.createElement("p");
-    metaEl.className = "tile-meta";
-    metaEl.textContent = `${clip.recorder} · ${formatDate(clip.createdTime)}`;
-
-    const playBtn = document.createElement("button");
-    playBtn.type = "button";
-    playBtn.className = "play-btn";
-    playBtn.textContent = "▶";
-    playBtn.tabIndex = -1;
-    playBtn.setAttribute("aria-hidden", "true");
-
     const progressTrack = document.createElement("div");
     progressTrack.className = "progress-track";
     const progressBar = document.createElement("div");
@@ -223,8 +196,6 @@ function renderClips(clips) {
 
     tile.appendChild(emojiEl);
     tile.appendChild(titleEl);
-    tile.appendChild(metaEl);
-    tile.appendChild(playBtn);
     tile.appendChild(progressTrack);
 
     const toggle = () => playClip(clip, tile);
