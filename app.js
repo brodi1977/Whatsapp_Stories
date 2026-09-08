@@ -194,6 +194,14 @@ function renderClips(clips) {
     progressBar.className = "progress-bar";
     progressTrack.appendChild(progressBar);
 
+    const eq = document.createElement("div");
+    eq.className = "eq";
+    eq.setAttribute("aria-hidden", "true");
+    eq.appendChild(document.createElement("span"));
+    eq.appendChild(document.createElement("span"));
+    eq.appendChild(document.createElement("span"));
+
+    tile.appendChild(eq);
     tile.appendChild(emojiEl);
     tile.appendChild(titleEl);
     tile.appendChild(progressTrack);
