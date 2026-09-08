@@ -50,7 +50,7 @@ body {
 }
 
 main {
-  max-width: 640px;
+  max-width: 960px;
   margin: 0 auto;
   padding: 0 1.25rem 2rem;
 }
@@ -100,39 +100,96 @@ main {
 }
 
 .clip-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 1rem;
 }
 
-.clip-card {
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 1rem 1.1rem;
+.tile {
+  aspect-ratio: 1 / 1;
+  border-radius: 20px;
+  padding: 0.9rem;
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  text-align: center;
+  color: #fff;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
-.clip-title {
+.tile:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.22);
+}
+
+.tile:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.8), 0 4px 14px rgba(0, 0, 0, 0.18);
+}
+
+.tile.playing {
+  outline: 3px solid rgba(255, 255, 255, 0.9);
+  outline-offset: -3px;
+}
+
+.tile-emoji {
+  font-size: 2.4rem;
+  line-height: 1;
+}
+
+.tile-title {
   margin: 0;
-  font-size: 1.05rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+  overflow-wrap: anywhere;
 }
 
-.clip-meta {
-  margin: 0.15rem 0 0;
-  color: var(--muted);
-  font-size: 0.85rem;
+.tile-meta {
+  margin: 0;
+  font-size: 0.7rem;
+  opacity: 0.9;
 }
 
-.clip-card audio {
-  width: 100%;
-  height: 40px;
+.play-btn {
+  margin-top: 0.2rem;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.9);
+  color: #1f2328;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.progress-track {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.progress-bar {
+  height: 100%;
+  width: 0%;
+  background: #fff;
 }
 
 .empty,
 .error {
+  grid-column: 1 / -1;
   text-align: center;
   color: var(--muted);
   padding: 2rem 1rem;
@@ -143,7 +200,7 @@ main {
 }
 
 .site-footer {
-  max-width: 640px;
+  max-width: 960px;
   margin: 1rem auto 2.5rem;
   padding: 0 1.25rem;
   text-align: center;
