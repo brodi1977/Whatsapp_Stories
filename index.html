@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>קטעי קול</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="site-header">
+    <h1>🎙️ קטעי קול</h1>
+    <p class="subtitle">כל ההקלטות מקבוצת הווטסאפ, במקום אחד — לחצו נגן והאזינו ישירות מהדפדפן.</p>
+  </header>
+
+  <main>
+    <div class="toolbar">
+      <input id="search" type="search" placeholder="חיפוש לפי נושא או שם..." aria-label="חיפוש" />
+      <button id="refresh-btn" type="button">🔄 רענון</button>
+    </div>
+
+    <p id="status" class="status"></p>
+    <p id="count" class="count"></p>
+
+    <section id="clip-list" class="clip-list" aria-live="polite"></section>
+  </main>
+
+  <footer class="site-footer">
+    <a id="folder-link" href="#" target="_blank" rel="noopener">➕ להוספת קטע חדש — פתחו את תיקיית הדרייב</a>
+    <p class="hint">
+      טיפ: לפני ההעלאה, שנו את שם הקובץ לפורמט <code>שם - נושא</code>
+      (למשל <code>אהרון - ברכה ליום הולדת</code>) כדי שהכותרת תוצג יפה באתר.
+    </p>
+  </footer>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
