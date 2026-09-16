@@ -156,13 +156,13 @@ main {
 .tile-duration {
   position: absolute;
   top: 0.6rem;
-  inset-inline-start: 0.6rem;
+  right: 0.6rem;
   direction: ltr;
-  font-size: 0.7rem;
-  font-weight: 600;
+  font-size: 0.85rem;
+  font-weight: 700;
   line-height: 1.2;
-  background: rgba(0, 0, 0, 0.28);
-  padding: 0.15rem 0.45rem;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 0.2rem 0.55rem;
   border-radius: 999px;
   z-index: 1;
 }
