@@ -227,19 +227,67 @@ main {
   text-overflow: ellipsis;
 }
 
-.progress-track {
+.seek {
+  display: none;
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
-  height: 4px;
-  background: rgba(255, 255, 255, 0.25);
+  width: 100%;
+  height: 22px;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  direction: ltr;
+  z-index: 1;
 }
 
-.progress-bar {
-  height: 100%;
-  width: 0%;
+.tile.playing .seek {
+  display: block;
+}
+
+.seek::-webkit-slider-runnable-track {
+  height: 5px;
+  border-radius: 3px;
+  background: linear-gradient(
+    to right,
+    #fff var(--seek-fill, 0%),
+    rgba(255, 255, 255, 0.3) var(--seek-fill, 0%)
+  );
+}
+
+.seek::-moz-range-track {
+  height: 5px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.seek::-moz-range-progress {
+  height: 5px;
+  border-radius: 3px;
   background: #fff;
+}
+
+.seek::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+  margin-top: -4px;
+}
+
+.seek::-moz-range-thumb {
+  width: 13px;
+  height: 13px;
+  border: none;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
 }
 
 .empty,

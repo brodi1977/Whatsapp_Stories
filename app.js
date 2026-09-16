@@ -46,9 +46,12 @@ const refreshBtn = document.getElementById("refresh-btn");
 const countEl = document.getElementById("count");
 const folderLink = document.getElementById("folder-link");
 
+const SEEK_MAX = 1000;
+
 let allClips = [];
 const player = new Audio();
 let activeClipId = null;
+let isSeeking = false;
 
 function isConfigured() {
   return (
@@ -132,12 +135,19 @@ function stopPlayback() {
   activeClipId = null;
 }
 
+function updateSeekVisual(seek, pct) {
+  seek.style.setProperty("--seek-fill", `${pct * 100}%`);
+}
+
 function setTileUiPlaying(tile, isPlaying) {
   if (!tile) return;
   tile.classList.toggle("playing", isPlaying);
   if (!isPlaying) {
-    const bar = tile.querySelector(".progress-bar");
-    if (bar) bar.style.width = "0%";
+    const seek = tile.querySelector(".seek");
+    if (seek) {
+      seek.value = "0";
+      updateSeekVisual(seek, 0);
+    }
   }
 }
 
@@ -154,10 +164,13 @@ function playClip(clip, tile) {
 }
 
 player.addEventListener("timeupdate", () => {
-  if (!activeClipId || !player.duration) return;
+  if (!activeClipId || !player.duration || isSeeking) return;
   const tile = listEl.querySelector(`[data-clip-id="${activeClipId}"]`);
-  const bar = tile && tile.querySelector(".progress-bar");
-  if (bar) bar.style.width = `${(player.currentTime / player.duration) * 100}%`;
+  const seek = tile && tile.querySelector(".seek");
+  if (!seek) return;
+  const pct = player.currentTime / player.duration;
+  seek.value = String(Math.round(pct * SEEK_MAX));
+  updateSeekVisual(seek, pct);
 });
 
 player.addEventListener("ended", stopPlayback);
@@ -188,12 +201,6 @@ function renderClips(clips) {
     titleEl.className = "tile-title";
     titleEl.textContent = clip.title;
 
-    const progressTrack = document.createElement("div");
-    progressTrack.className = "progress-track";
-    const progressBar = document.createElement("div");
-    progressBar.className = "progress-bar";
-    progressTrack.appendChild(progressBar);
-
     const eq = document.createElement("div");
     eq.className = "eq";
     eq.setAttribute("aria-hidden", "true");
@@ -201,10 +208,19 @@ function renderClips(clips) {
     eq.appendChild(document.createElement("span"));
     eq.appendChild(document.createElement("span"));
 
+    const seek = document.createElement("input");
+    seek.type = "range";
+    seek.className = "seek";
+    seek.min = "0";
+    seek.max = String(SEEK_MAX);
+    seek.step = "1";
+    seek.value = "0";
+    seek.setAttribute("aria-label", `התקדמות ניגון: ${clip.title}`);
+
     tile.appendChild(eq);
     tile.appendChild(emojiEl);
     tile.appendChild(titleEl);
-    tile.appendChild(progressTrack);
+    tile.appendChild(seek);
 
     const toggle = () => playClip(clip, tile);
     tile.addEventListener("click", toggle);
@@ -214,6 +230,20 @@ function renderClips(clips) {
         toggle();
       }
     });
+
+    // מונע מהגרירה/לחיצה על פס ההתקדמות להפעיל גם את ה-toggle של האריח כולו.
+    ["click", "mousedown", "touchstart", "keydown"].forEach((evt) =>
+      seek.addEventListener(evt, (e) => e.stopPropagation())
+    );
+    seek.addEventListener("mousedown", () => (isSeeking = true));
+    seek.addEventListener("touchstart", () => (isSeeking = true));
+    seek.addEventListener("input", () => {
+      if (activeClipId !== clip.id || !player.duration) return;
+      const pct = Number(seek.value) / SEEK_MAX;
+      player.currentTime = pct * player.duration;
+      updateSeekVisual(seek, pct);
+    });
+    seek.addEventListener("change", () => (isSeeking = false));
 
     listEl.appendChild(tile);
   }
