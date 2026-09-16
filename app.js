@@ -53,6 +53,9 @@ const player = new Audio();
 let activeClipId = null;
 let isSeeking = false;
 
+// clipId -> משך בשניות, כדי לא לטעון מטא-דאטה מחדש בכל רינדור/חיפוש.
+const durationCache = new Map();
+
 function isConfigured() {
   return (
     CONFIG.FOLDER_ID &&
@@ -86,6 +89,43 @@ function parseFileName(rawName) {
 
 function mediaUrl(fileId) {
   return `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}?alt=media&key=${encodeURIComponent(CONFIG.API_KEY)}`;
+}
+
+function formatDuration(totalSeconds) {
+  if (!Number.isFinite(totalSeconds) || totalSeconds < 0) return "";
+  const total = Math.round(totalSeconds);
+  const minutes = Math.floor(total / 60);
+  const seconds = total % 60;
+  return `${minutes}:${String(seconds).padStart(2, "0")}`;
+}
+
+// טוען את משך הקטע ברקע (בלי לנגן) כדי להציג אותו על האריח, ושומר בקאש
+// כדי לא לבקש את זה שוב מ-Drive בכל חיפוש/רענון.
+function loadDuration(clip, durationEl) {
+  if (durationCache.has(clip.id)) {
+    const dur = durationCache.get(clip.id);
+    durationEl.textContent = formatDuration(dur);
+    durationEl.dataset.total = String(dur);
+    return;
+  }
+  const probe = new Audio();
+  probe.preload = "metadata";
+  probe.src = mediaUrl(clip.id);
+  probe.addEventListener(
+    "loadedmetadata",
+    () => {
+      if (!Number.isFinite(probe.duration)) return;
+      durationCache.set(clip.id, probe.duration);
+      const tile = listEl.querySelector(`[data-clip-id="${clip.id}"]`);
+      const el = tile && tile.querySelector(".tile-duration");
+      if (!el) return;
+      el.dataset.total = String(probe.duration);
+      if (activeClipId !== clip.id) {
+        el.textContent = formatDuration(probe.duration);
+      }
+    },
+    { once: true }
+  );
 }
 
 // hash יציב ממחרוזת -> מספר, לבחירת צבע/אימוג'י גיבוי עקביים לאותה כותרת.
@@ -148,6 +188,10 @@ function setTileUiPlaying(tile, isPlaying) {
       seek.value = "0";
       updateSeekVisual(seek, 0);
     }
+    const durationEl = tile.querySelector(".tile-duration");
+    if (durationEl && durationEl.dataset.total) {
+      durationEl.textContent = formatDuration(Number(durationEl.dataset.total));
+    }
   }
 }
 
@@ -166,11 +210,20 @@ function playClip(clip, tile) {
 player.addEventListener("timeupdate", () => {
   if (!activeClipId || !player.duration || isSeeking) return;
   const tile = listEl.querySelector(`[data-clip-id="${activeClipId}"]`);
-  const seek = tile && tile.querySelector(".seek");
-  if (!seek) return;
+  if (!tile) return;
   const pct = player.currentTime / player.duration;
-  seek.value = String(Math.round(pct * SEEK_MAX));
-  updateSeekVisual(seek, pct);
+
+  const seek = tile.querySelector(".seek");
+  if (seek) {
+    seek.value = String(Math.round(pct * SEEK_MAX));
+    updateSeekVisual(seek, pct);
+  }
+
+  const durationEl = tile.querySelector(".tile-duration");
+  if (durationEl) {
+    const remaining = Math.max(0, player.duration - player.currentTime);
+    durationEl.textContent = `-${formatDuration(remaining)}`;
+  }
 });
 
 player.addEventListener("ended", stopPlayback);
@@ -208,6 +261,10 @@ function renderClips(clips) {
     eq.appendChild(document.createElement("span"));
     eq.appendChild(document.createElement("span"));
 
+    const durationEl = document.createElement("span");
+    durationEl.className = "tile-duration";
+    loadDuration(clip, durationEl);
+
     const seek = document.createElement("input");
     seek.type = "range";
     seek.className = "seek";
@@ -218,6 +275,7 @@ function renderClips(clips) {
     seek.setAttribute("aria-label", `התקדמות ניגון: ${clip.title}`);
 
     tile.appendChild(eq);
+    tile.appendChild(durationEl);
     tile.appendChild(emojiEl);
     tile.appendChild(titleEl);
     tile.appendChild(seek);
@@ -242,6 +300,8 @@ function renderClips(clips) {
       const pct = Number(seek.value) / SEEK_MAX;
       player.currentTime = pct * player.duration;
       updateSeekVisual(seek, pct);
+      const remaining = Math.max(0, player.duration - player.currentTime);
+      durationEl.textContent = `-${formatDuration(remaining)}`;
     });
     seek.addEventListener("change", () => (isSeeking = false));
 
