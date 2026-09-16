@@ -100,7 +100,14 @@ function formatDuration(totalSeconds) {
 }
 
 // טוען את משך הקטע ברקע (בלי לנגן) כדי להציג אותו על האריח, ושומר בקאש
-// כדי לא לבקש את זה שוב מ-Drive בכל חיפוש/רענון.
+// כדי לא לבקש את זה שוב מ-Drive בכל חיפוש/רענון. הבקשות מוגבלות לכמה
+// בו-זמנית (תור) כדי לא להציף את Drive בעשרות בקשות הורדה בבת אחת
+// כשיש הרבה קטעים — זה עלול לגרום ל-Drive לחסום זמנית הורדות מהתיקייה.
+const MAX_CONCURRENT_DURATION_PROBES = 3;
+const durationQueue = [];
+const pendingDurationClipIds = new Set();
+let activeDurationProbes = 0;
+
 function loadDuration(clip, durationEl) {
   if (durationCache.has(clip.id)) {
     const dur = durationCache.get(clip.id);
@@ -108,24 +115,47 @@ function loadDuration(clip, durationEl) {
     durationEl.dataset.total = String(dur);
     return;
   }
-  const probe = new Audio();
-  probe.preload = "metadata";
-  probe.src = mediaUrl(clip.id);
-  probe.addEventListener(
-    "loadedmetadata",
-    () => {
-      if (!Number.isFinite(probe.duration)) return;
-      durationCache.set(clip.id, probe.duration);
-      const tile = listEl.querySelector(`[data-clip-id="${clip.id}"]`);
-      const el = tile && tile.querySelector(".tile-duration");
-      if (!el) return;
-      el.dataset.total = String(probe.duration);
-      if (activeClipId !== clip.id) {
-        el.textContent = formatDuration(probe.duration);
-      }
-    },
-    { once: true }
-  );
+  if (pendingDurationClipIds.has(clip.id)) return;
+  pendingDurationClipIds.add(clip.id);
+  durationQueue.push(clip);
+  pumpDurationQueue();
+}
+
+function pumpDurationQueue() {
+  while (activeDurationProbes < MAX_CONCURRENT_DURATION_PROBES && durationQueue.length > 0) {
+    const clip = durationQueue.shift();
+    activeDurationProbes++;
+
+    const probe = new Audio();
+    probe.preload = "metadata";
+    probe.src = mediaUrl(clip.id);
+
+    const finish = () => {
+      pendingDurationClipIds.delete(clip.id);
+      activeDurationProbes--;
+      pumpDurationQueue();
+    };
+
+    probe.addEventListener(
+      "loadedmetadata",
+      () => {
+        if (Number.isFinite(probe.duration)) {
+          durationCache.set(clip.id, probe.duration);
+          const tile = listEl.querySelector(`[data-clip-id="${clip.id}"]`);
+          const el = tile && tile.querySelector(".tile-duration");
+          if (el) {
+            el.dataset.total = String(probe.duration);
+            if (activeClipId !== clip.id) {
+              el.textContent = formatDuration(probe.duration);
+            }
+          }
+        }
+        finish();
+      },
+      { once: true }
+    );
+    probe.addEventListener("error", finish, { once: true });
+  }
 }
 
 // hash יציב ממחרוזת -> מספר, לבחירת צבע/אימוג'י גיבוי עקביים לאותה כותרת.

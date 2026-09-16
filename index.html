@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css?v=9" />
 </head>
 <body>
   <header class="site-header">
@@ -35,7 +35,9 @@
     </p>
   </footer>
 
+  <!-- ה-?v=9 ב-style.css/app.js מונע מדפדפנים להציג גרסה ישנה מהזיכרון המטמון (cache) —
+       בכל עדכון לאחד מהקבצים האלה יש להעלות את המספר גם כאן וגם למעלה ב-<link>. -->
   <script src="config.js"></script>
-  <script src="app.js"></script>
+  <script src="app.js?v=9"></script>
 </body>
 </html>
